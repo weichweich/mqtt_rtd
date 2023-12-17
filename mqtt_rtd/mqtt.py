@@ -2,11 +2,18 @@ import json
 import aiomqtt
 
 from config import Config, SensorConfig
+from sensor import Sensor
 
 
-async def publish_temperature(client: aiomqtt.Client, topic: str,
-                              temperature: float):
-    await client.publish(topic, payload=json.dumps({"temperature": temperature}))
+def state_topic(config: Config, sensor: SensorConfig) -> str:
+    return f"{config.mqtt.topic_prefix}/sensor/{sensor.name}"
+
+
+async def publish_temperature(client: aiomqtt.Client, config: Config,
+                              sensor: Sensor):
+    await client.publish(state_topic(config, sensor.config),
+                         payload=json.dumps(
+                             {"temperature": sensor.temperature()}))
 
 
 async def publish_ha_config(client: aiomqtt.Client, config: Config,
@@ -21,7 +28,7 @@ async def publish_ha_config(client: aiomqtt.Client, config: Config,
             "identifiers": ["mqtt-rtd", config.mqtt_ident],
         },
         "unique_id": f"{config.mqtt_ident}_temp_{sensor.name}",
-        "state_topic": 
+        "state_topic": state_topic(config, sensor),
     }
 
     await client.publish(

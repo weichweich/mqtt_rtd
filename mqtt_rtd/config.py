@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 import pathlib
 import random
 import string
-import tomllib
+import tomlkit
 from typing import List, Optional
 
-from marshmallow import validate
+from marshmallow import Schema, post_dump, validate
 import marshmallow_dataclass
 
 
@@ -14,8 +14,15 @@ def randomword(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
+class BaseSchema(Schema):
+
+    @post_dump
+    def remove_skip_none(self, data, **kwargs):
+        return {key: value for key, value in data.items() if not value is None}
+
+
 @dataclass
-class SensorConfig:
+class SensorConfig(BaseSchema):
     chip_select: int = field(
         metadata={"validate": validate.Range(min=0, max=40)})
     name: str
@@ -25,10 +32,11 @@ class SensorConfig:
 
 
 @dataclass
-class MqttConfig:
+class MqttConfig(BaseSchema):
     hostname: str
-    password: Optional[str]
-    username: Optional[str]
+    password: Optional[str] = field(metadata={"allow_none": False})
+    username: Optional[str] = field(metadata={"allow_none": False})
+    topic_prefix: str
 
     port: int = field(
         default=1883,
@@ -36,7 +44,7 @@ class MqttConfig:
 
 
 @dataclass
-class Config:
+class Config(BaseSchema):
     sensor: List[SensorConfig]
     mqtt: MqttConfig
     name: str = field(default="MQTT RTD")
@@ -45,8 +53,20 @@ class Config:
 
 
 def load(path: pathlib.Path) -> Config:
-    with path.open("rb") as f:
-        raw_toml = tomllib.load(f)
+    with path.open("r") as f:
+        in_data = f.read()
+        raw_toml = tomlkit.loads(in_data)
     config_schema = marshmallow_dataclass.class_schema(Config)()
 
-    return config_schema.load(raw_toml)
+    config = config_schema.load(raw_toml)
+
+    updated_config = config_schema.dump(config)
+
+    if raw_toml != updated_config:
+        # save the `mqtt_ident` so that we use the same entity persistently.
+        print("updating config")
+        str_updated_config = tomlkit.dumps(updated_config)
+        with path.open("w") as f:
+            f.write(str_updated_config)
+
+    return config

@@ -12,8 +12,7 @@ async def publish_loop(client: aiomqtt.Client, config, sensor: Sensor):
     await publish_ha_config(client, config, sensor.config)
     while True:
         # TODO: law of demeter
-        await publish_temperature(client, sensor.config.name,
-                                  sensor.temperature())
+        await publish_temperature(client, config, sensor)
         await asyncio.sleep(sensor.config.update_interval)
 
 
