@@ -11,11 +11,12 @@ aiomqtt = "^1.2.1"
 marshmallow = "^3.20.1"
 marshmallow-dataclass = "^8.6.0"
 tomlkit = "^0.12.3"
-adafruit-blinka = {version = "^8.28.0", optional = true}
-adafruit-circuitpython-max31865 = {version = "^2.2.21", optional = true}
+adafruit-blinka = { version = "^8.28.0", optional = true }
+adafruit-circuitpython-max31865 = { version = "^2.2.21", optional = true }
+rpi-gpio = { version = "^0.7.1", optional = true }
 
 [tool.poetry.extras]
-embedded = ["adafruit-blinka", "adafruit-circuitpython-max31865"]
+embedded = ["adafruit-blinka", "adafruit-circuitpython-max31865", "rpi-gpio"]
 
 [tool.poetry.group.dev.dependencies]
 yapf = "^0.40.2"
