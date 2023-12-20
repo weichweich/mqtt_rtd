@@ -14,7 +14,8 @@ class Sensor:
 
 
 class DummySensor(Sensor):
-
+    """For testing without a sensor.
+    """
     def temperature(self) -> float:
         return 0.0
 
