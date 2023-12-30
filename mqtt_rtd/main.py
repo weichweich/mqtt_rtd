@@ -17,6 +17,15 @@ async def publish_loop(client: aiomqtt.Client, config, sensor: Sensor):
 
 
 async def start_all(config: Config, sensors: List[Sensor]):
+    try:
+        return await __unsafe_start_all(config, sensors)
+    except aiomqtt.error.MqttConnectError as e:
+        print("MQTT connection error:", e)
+    except aiomqtt.error.MqttError as e:
+        print("MQTT error:", e)
+
+
+async def __unsafe_start_all(config: Config, sensors: List[Sensor]):
     async with aiomqtt.Client(config.mqtt.hostname,
                               port=config.mqtt.port,
                               username=config.mqtt.username,
@@ -41,4 +50,8 @@ def main():
     sensors = sensor_from_config(config.sensor)
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(start_all(config, sensors))
+    try:
+        loop.run_until_complete(start_all(config, sensors))
+    except KeyboardInterrupt:
+        print("Recevied Keyboard Interrupt... shutting down")
+
