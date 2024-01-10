@@ -28,7 +28,7 @@ class AdafruitSensor(Sensor):
         import board
         import digitalio
         import adafruit_max31865
-        from adafruit_blinka.agnostic import board_id, detector
+        from adafruit_blinka.agnostic import detector
 
         def int_to_board(pin_number: int):
             match pin_number:
@@ -53,6 +53,7 @@ class AdafruitSensor(Sensor):
 
     def temperature(self) -> float:
         return self.sensor.temperature
+
 
 def sensor_from_config(sensor_config: List[SensorConfig]) -> List[DummySensor]:
     sensors = []

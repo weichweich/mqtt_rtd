@@ -21,7 +21,7 @@ async def publish_ha_config(client: aiomqtt.Client, config: Config,
                             sensor: SensorConfig):
     payload = {
         "device_class": "temperature",
-        "native_unit_of_measurement": "°C",
+        "unit_of_measurement": "°C",
         "value_template": "{{ value_json.temperature}}",
         "name": sensor.name,
         "device": {
